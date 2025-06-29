@@ -2,12 +2,14 @@ import cv2
 import mediapipe as mp
 import numpy as np
 
+from pose_detection import is_shooting
+
 mp_pose = mp.solutions.pose
 mp_drawing = mp.solutions.drawing_utils
 
 cap = cv2.VideoCapture(0)
 
-with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
+with mp_pose.Pose(min_detection_confidence=0.6, min_tracking_confidence=0.6) as pose:
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -22,8 +24,15 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
 
         if results.pose_landmarks:
             mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+            
+            if is_shooting(results.pose_landmarks):
+                cv2.putText(image, 'jump shot in motion', (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
-        cv2.imshow('Jump Shot Tracker', image)
+        else:
+            cv2.putText(image, 'nobody in frame', (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+
+
+        cv2.imshow('body tracker', image)
         if cv2.waitKey(10) & 0xFF == ord('q'):
             break
 
